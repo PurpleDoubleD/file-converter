@@ -338,6 +338,10 @@ async function imageToImage(file, targetExt) {
 
 // PDF → Images (one per page)
 async function pdfToImage(file, targetExt) {
+  if (!window._pdfReady) {
+    for (let i = 0; i < 50; i++) { await new Promise(r => setTimeout(r, 100)); if (window._pdfReady) break; }
+    if (!window._pdfReady) throw new Error('PDF library still loading, please try again');
+  }
   const arrayBuf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
   const results = [];
@@ -406,12 +410,11 @@ function loadImage(file) {
   });
 }
 </script>
-<!-- pdf.js loaded last (largest) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs" type="module"></script>
 <script type="module">
 import * as pdfjsModule from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
 window.pdfjsLib = pdfjsModule;
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs';
+window._pdfReady = true;
 </script>
 </body>
 </html>
